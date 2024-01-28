@@ -34,11 +34,11 @@ namespace ConsoleApp2
                             Console.WriteLine("File 'LoremIpsum.txt' not found.");
                             Environment.Exit(1);
                         }
-                        CountWordsInLoremIpsum();
+                        CountWords();
                         break;
 
                     case 2:
-                        PerformMathOperation();
+                        MathOperation();
                         break;
 
                     case 3:
@@ -51,7 +51,7 @@ namespace ConsoleApp2
                 }
             }
         }
-        static void CountWordsInLoremIpsum()
+        static void CountWords()
         {
             Console.Write("Enter num of words ");
             if (!int.TryParse(Console.ReadLine(), out int numberOfWords))
@@ -71,7 +71,7 @@ namespace ConsoleApp2
         }
 
 
-        static void PerformMathOperation()
+        static void MathOperation()
         {
             Console.Write("Enter expression: ");
             string expression = Console.ReadLine();
