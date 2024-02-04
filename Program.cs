@@ -1,88 +1,101 @@
 using System;
 using System.IO;
+using System.Linq;
+using System.Net.Http;
+using System.Threading.Tasks;
 
-namespace ConsoleApp2
+class Program
 {
-    internal class Program
+    static async Task Main()
     {
-        static string text;
-        static void Main()
+        while (true)
         {
-            while (true)
+            Console.WriteLine("Menu:");
+            Console.WriteLine("1. Code");
+            Console.WriteLine("2. File");
+            Console.WriteLine("3. List of Files in Directory");
+            Console.WriteLine("4. Which even?");
+            Console.WriteLine("5. Exit");
+
+            Console.Write("Enter number: ");
+            int number;
+
+            while (!int.TryParse(Console.ReadLine(), out number))
             {
-                Console.WriteLine("Menu:");
-                Console.WriteLine("1. Count words in text \"Lorem ipsum\"");
-                Console.WriteLine("2. Math expression");
-                Console.WriteLine("3. Exit");
+                Console.Write("Err. Try again: ");
+            }
 
-                Console.Write("Enter number: ");
-                int number;
+            switch (number)
+            {
+                case 1:
+                    await DownloadPageAsync();
+                    break;
 
-                while (!int.TryParse(Console.ReadLine(), out number))
-                {
-                    Console.Write("Err. Try again");
-                }
-                switch (number)
-                {
-                    case 1:
-                        try
-                        {
-                            text = File.ReadAllText("C:\\Users\\Marina Gorshevskaya\\source\\repos\\ConsoleApp2\\ConsoleApp2\\LoremIpsum.txt");
-                        }
-                        catch (FileNotFoundException)
-                        {
-                            Console.WriteLine("File 'LoremIpsum.txt' not found.");
-                            Environment.Exit(1);
-                        }
-                        CountWords();
-                        break;
+                case 2:
+                    string filePath = "output.html";
+                    Console.Write("Enter the text to write to the file: ");
+                    string fileContent = Console.ReadLine();
 
-                    case 2:
-                        MathOperation();
-                        break;
+                    File.WriteAllText(filePath, fileContent);
+                    Console.WriteLine("Content has been written to the file.");
+                    break;
 
-                    case 3:
-                        Environment.Exit(0);
-                        break;
+                case 3:
+                    string directoryPath = ".";
+                    var files = new DirectoryInfo(directoryPath).EnumerateFiles();
+                    foreach (var file in files)
+                    {
+                        Console.WriteLine($"File: {file.Name}");
+                    }
+                    break;
+                case 4:
+                    Console.Write("Enter numbers");
+                    string inputNumbers = Console.ReadLine();
 
-                    default:
-                        Console.WriteLine("Err. Try again");
-                        break;
-                }
+                    int[] numbers = inputNumbers.Split(' ')
+                                                .Select(str => int.TryParse(str, out int num) ? num : 0)
+                                                .ToArray();
+
+                    var evenNumbers = numbers.Where(n => n % 2 == 0);
+
+                    Console.WriteLine("Even Numbers:");
+                    foreach (var num in evenNumbers)
+                    {
+                        Console.WriteLine(num);
+                    }
+                    break;
+                case 5:
+                    Environment.Exit(0);
+                    break;
+
+                default:
+                    Console.WriteLine("Err. Try again");
+                    break;
             }
         }
-        static void CountWords()
+    }
+
+    static async Task DownloadPageAsync()
+    {
+        Console.Write("Enter the number of lines to download from the page: ");
+        int numberOfLines;
+
+        while (!int.TryParse(Console.ReadLine(), out numberOfLines))
         {
-            Console.Write("Enter num of words ");
-            if (!int.TryParse(Console.ReadLine(), out int numberOfWords))
-            {
-                Console.WriteLine("Err");
-                return;
-            }
-
-            string[] words = text.Split(new[] { ' ', '\t', '\n', '\r' });
-
-            Console.WriteLine($"First {numberOfWords} words:\n");
-            for (int i = 0; i < numberOfWords; i++)
-            {
-                Console.Write(words[i] + " ");
-            }
-            Console.WriteLine();
+            Console.Write("Err. Try again: ");
         }
 
+        string page = "http://en.wikipedia.org/";
 
-        static void MathOperation()
+        using (HttpClient client = new HttpClient())
+        using (HttpResponseMessage response = await client.GetAsync(page))
+        using (HttpContent content = response.Content)
         {
-            Console.Write("Enter expression: ");
-            string expression = Console.ReadLine();
-            try
+            string result = await content.ReadAsStringAsync();
+
+            if (result != null && result.Length >= numberOfLines)
             {
-                double result = Convert.ToDouble(new System.Data.DataTable().Compute(expression, ""));
-                Console.WriteLine($"Result: {result}");
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Err: {ex.Message}");
+                Console.WriteLine(result.Substring(0, numberOfLines) + "...");
             }
         }
     }
