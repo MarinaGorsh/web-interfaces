@@ -1,43 +1,76 @@
 using System;
-using System.Threading;
-using System.Threading.Tasks;
+using System.Reflection;
+
+public class MyClass
+{
+    public string name;
+    public object surname;
+    private int age;
+    protected double height;
+    internal bool legalAge;
+
+    public MyClass(string name, object surname, int age, double height, bool legalAge)
+    {
+        this.name = name;
+        this.surname = surname;
+        this.age = age;
+        this.height = height;
+        this.legalAge = legalAge;
+    }
+
+    public void Display()
+    {
+        Console.WriteLine($"Name: {name}");
+        Console.WriteLine($"Surname: {surname}");
+        Console.WriteLine($"Age: {age}");
+        Console.WriteLine($"Height: {height}");
+        Console.WriteLine($"LegalAge: {legalAge}");
+    }
+
+    public void ChangeHeight(double newHeight)
+    {
+        height = newHeight;
+        Console.WriteLine($"Height has been changed to {newHeight}");
+    }
+
+    public bool CheckLegalAge()
+    {
+        return age >= 18;
+    }
+}
 
 class Program
 {
     static void Main(string[] args)
     {
-        Thread_1();
-        Thread.Sleep(2000);
-        Async_Await();
-    }
-    static void Thread_1()
-    {
-        Console.WriteLine("Thread:");
-        Thread thread1 = new Thread(new ParameterizedThreadStart(DoWork));
-        Thread thread2 = new Thread(new ParameterizedThreadStart(DoWork));
+        Type type = typeof(MyClass);
+        TypeInfo typeInfo = type.GetTypeInfo();
+        Console.WriteLine($"Type Name: {type.FullName}");
+        Console.WriteLine($"Is Abstract?: {typeInfo.IsAbstract}");
+        Console.WriteLine($"Is Class?: {typeInfo.IsClass}");
+        Console.WriteLine($"Is Public?: {typeInfo.IsPublic}");
 
-        thread1.Start("Thread 1");
-        thread2.Start("Thread 2");
-        Console.WriteLine("The END");
-    }
-    static void DoWork(object threadName)
-    {
-        Console.WriteLine($"Thread '{threadName}' is running");
-        Console.WriteLine($"Thread '{threadName}' has finished");
-    }
+        MemberInfo[] members = type.GetMembers();
+        Console.WriteLine("\nMembers:");
+        foreach (var member in members)
+        {
+            Console.WriteLine($"{member.MemberType}: {member.Name}");
+        }
 
-    static void Async_Await()
-    {
-        Console.WriteLine("\nAsync-Await:");
-        Task task1 = Task.Factory.StartNew(() => DoWork2("Task 1"));
-        Task task2 = Task.Factory.StartNew(() => DoWork2("Task 2"));
+        FieldInfo[] fields = type.GetFields(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
+        Console.WriteLine("\nFields:");
+        foreach (var field in fields)
+        {
+            Console.WriteLine($"{field.FieldType} {field.Name} public? {field.IsPublic}");
 
-        Task.WaitAll(task1, task2);
-        Console.WriteLine("The END 2");
+        }
+
+        MethodInfo methodInfo = type.GetMethod("Display");
+        if (methodInfo != null)
+        {
+            Console.WriteLine($"\nMethod: {methodInfo.Name}");
+            MyClass me = new MyClass("Maryna", "Horshevska", 19, 160, true);
+            methodInfo.Invoke(me, null);
+        }
     }
-    static void DoWork2(string taskName)
-    {
-        Console.WriteLine($"Task '{taskName}' is running");
-        Console.WriteLine($"Task '{taskName}' has finished");
-    }
-}     
+}
