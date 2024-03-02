@@ -1,76 +1,58 @@
 using System;
-using System.Reflection;
+using System.Net;
+using System.Threading.Tasks;
 
-public class MyClass
+namespace Lr
 {
-    public string name;
-    public object surname;
-    private int age;
-    protected double height;
-    internal bool legalAge;
-
-    public MyClass(string name, object surname, int age, double height, bool legalAge)
+    internal class Program
     {
-        this.name = name;
-        this.surname = surname;
-        this.age = age;
-        this.height = height;
-        this.legalAge = legalAge;
-    }
-
-    public void Display()
-    {
-        Console.WriteLine($"Name: {name}");
-        Console.WriteLine($"Surname: {surname}");
-        Console.WriteLine($"Age: {age}");
-        Console.WriteLine($"Height: {height}");
-        Console.WriteLine($"LegalAge: {legalAge}");
-    }
-
-    public void ChangeHeight(double newHeight)
-    {
-        height = newHeight;
-        Console.WriteLine($"Height has been changed to {newHeight}");
-    }
-
-    public bool CheckLegalAge()
-    {
-        return age >= 18;
-    }
-}
-
-class Program
-{
-    static void Main(string[] args)
-    {
-        Type type = typeof(MyClass);
-        TypeInfo typeInfo = type.GetTypeInfo();
-        Console.WriteLine($"Type Name: {type.FullName}");
-        Console.WriteLine($"Is Abstract?: {typeInfo.IsAbstract}");
-        Console.WriteLine($"Is Class?: {typeInfo.IsClass}");
-        Console.WriteLine($"Is Public?: {typeInfo.IsPublic}");
-
-        MemberInfo[] members = type.GetMembers();
-        Console.WriteLine("\nMembers:");
-        foreach (var member in members)
+        static async Task Main(string[] args)
         {
-            Console.WriteLine($"{member.MemberType}: {member.Name}");
-        }
+            string url1 = $"https://languagetool.org/api/v2/languages";
+            ApiClient apiClient1 = new ApiClient(url1);
 
-        FieldInfo[] fields = type.GetFields(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
-        Console.WriteLine("\nFields:");
-        foreach (var field in fields)
-        {
-            Console.WriteLine($"{field.FieldType} {field.Name} public? {field.IsPublic}");
+            var responseGet = await apiClient1.GetAsync<LangDetails>();
 
-        }
+            if (responseGet.StatusCode == HttpStatusCode.OK)
+            {
+                Console.WriteLine("GET Request Success!");
+                foreach (var lang in responseGet.Results)
+                {
+                    Console.WriteLine($"Name: {lang.Name}, Code: {lang.Code}, LongCode: {lang.LongCode}");
+                }
+            }
+            else
+            {
+                Console.WriteLine($"GET Request Failed. Status Code: {responseGet.StatusCode}, Message: {responseGet.Message}");
+            }
 
-        MethodInfo methodInfo = type.GetMethod("Display");
-        if (methodInfo != null)
-        {
-            Console.WriteLine($"\nMethod: {methodInfo.Name}");
-            MyClass me = new MyClass("Maryna", "Horshevska", 19, 160, true);
-            methodInfo.Invoke(me, null);
+            string url2 = $"https://languagetool.org/api/v2/check";
+            ApiClient apiClient2 = new ApiClient(url2);
+
+            Console.WriteLine("define language");
+            string word = Console.ReadLine();
+
+            var responsePost = await apiClient2.GetAsyncWithParam<LanguageToolResponse>(word, "auto");
+
+            if (responsePost != null)
+            {
+                if (responsePost.StatusCode == HttpStatusCode.OK)
+                {
+                    Console.WriteLine($"Post Request Success!");
+                    foreach (var res in responsePost.Results)
+                    {
+                        Console.WriteLine($"Language: {res.Language.Name}, Code: {res.Language.Code}");
+                    }
+                }
+                else
+                {
+                    Console.WriteLine($"POST Request Failed. Status Code: {responsePost.StatusCode}, Message: {responsePost.Message}");
+                }
+            }
+            else
+            {
+                Console.WriteLine($"POST Request Failed. Status Code: {responsePost.StatusCode}, Message: {responsePost.Message}");
+            }
         }
     }
 }
