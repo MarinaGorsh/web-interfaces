@@ -1,7 +1,9 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace _6lr.Controllers
 {
+    [Authorize]
     [ApiController]
     [Route("[controller]")]
     public class PhonesController : ControllerBase{
