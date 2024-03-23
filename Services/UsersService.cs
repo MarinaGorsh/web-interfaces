@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using System.Security.Cryptography;
 
 namespace _6lr
 {
@@ -9,31 +10,41 @@ namespace _6lr
         Task AddUser(Users user);
         Task UpdateUser(Users user);
         Task DeleteUser(int id);
+        Task<Users> GetUserByEmail(string? email);
     }
 
     public class UsersService : IUsersService
     {
         private readonly List<Users> _users = new List<Users>();
-        public UsersService()
+        static PasswordEncryptionService encryptionService = new PasswordEncryptionService();
+
+        /*public UsersService()
         {
-            _users.Add(new Users { Id = 0, Name = "Oleg", Surname = "Oleg", PhoneBrand = "Samsung", PhoneName = "Galaxy S22" });
-            _users.Add(new Users { Id = 1, Name = "Ivan", Surname = "Ivan", PhoneBrand = "Apple", PhoneName = "iPhone 14" });
-            _users.Add(new Users { Id = 2, Name = "Maria", Surname = "Maria", PhoneBrand = "Xiaomi", PhoneName = "Redmi Note 11" });
-            _users.Add(new Users { Id = 3, Name = "Anna", Surname = "Anna", PhoneBrand = "Honor", PhoneName = "9 Pro" });
-            _users.Add(new Users { Id = 4, Name = "Pavel", Surname = "Pavel", PhoneBrand = "Google", PhoneName = "Pixel 6" });
-            _users.Add(new Users { Id = 5, Name = "Olga", Surname = "Olga", PhoneBrand = "Huawei", PhoneName = "Mate 50" });
-            _users.Add(new Users { Id = 6, Name = "Andrii", Surname = "Andrii", PhoneBrand = "Sony", PhoneName = "Xperia 1 III" });
-            _users.Add(new Users { Id = 7, Name = "Natalia", Surname = "Natalia", PhoneBrand = "Realme", PhoneName = "8 Pro" });
-            _users.Add(new Users { Id = 8, Name = "Dmitry", Surname = "Dmitry", PhoneBrand = "Oppo", PhoneName = "Find X5" });
-            _users.Add(new Users { Id = 9, Name = "Svitlana", Surname = "Svitlana", PhoneBrand = "Vivo", PhoneName = "X80 Pro" });
-        }
+            _users.Add(new Users {
+                Id = 0,
+                Name = "Oleg",
+                Surname = "Oleg",
+                Email = "olezhe@gmail.com",
+                Birth = new DateTime(2001, 8, 12),
+                Password = encryptionService.EncryptPassword("prostoparol"),
+                LastAuth = DateTime.Now,
+                ErrAuth = 0
+            });
+            
+        }*/ 
+        //вирішила не тут додавати юзерів, а у Swagger.
         public async Task<List<Users>> GetUsers()
         {
             return _users;
         }
-
+        public async Task<Users> GetUserByEmail(string email)
+        {
+            var user = _users.FirstOrDefault(p => p.Email == email);
+            return user;
+        }
         public async Task AddUser(Users user)
         {
+            user.Password = encryptionService.EncryptPassword(user.Password);
             _users.Add(user);
         }
 
